@@ -14,16 +14,18 @@ export async function activate(context: vscode.ExtensionContext) {
     fs.watch(uri + "/.git/HEAD", (event, filename) => {
       // print new branch name
 
-      const branchName = fs.readFile(uri + "/.git/HEAD", "utf8", (err, data: any) => {
-        if (err) {
-          console.error(err);
-          return;
+      const branchName = fs.readFile(
+        uri + "/.git/HEAD",
+        "utf8",
+        (err, data: any) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          const branchName = data.split("/").pop().trim();
+          console.log(branchName);
         }
-        const branchName = data.split("/").pop().trim();
-        console.log(branchName);
-      }
-
-    
+      );
     });
   }
 }
