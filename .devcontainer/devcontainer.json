@@ -11,6 +11,10 @@
       "VARIANT": "16-bullseye"
     }
   },
+  "mounts": [
+    "source=container-mode,target=/commandhistory,type=volume",
+    "source=${env:HOME}${env:USERPROFILE}/projects/container/mode,target=/Users/francoisseguin/projects/container/mode,type=bind"
+  ],
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.

@@ -2,8 +2,12 @@
 
 vscode extension to monitor the environment mode in devcontainer
 
+## notes
+
+- activationEvents in package.json
+
 ## development
 
 - `f5 to build and launch into another window`
-- `cmd+r to reload`
-- `cmd+shift+p and execute extension`
+- `select a workspace folder` in the new window
+- `cmd+r to reload` in the new window

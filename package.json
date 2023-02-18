@@ -14,7 +14,10 @@
   "categories": [
     "Other"
   ],
-  "main": "./extension.js",
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
@@ -24,20 +27,24 @@
     ]
   },
   "scripts": {
-    "package": "vsce package"
+    "package": "vsce package",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/glob": "^7.2.0",
-    "@types/mocha": "^9.1.1",
+    "@types/vscode": "^1.75.0",
+    "@types/glob": "^8.0.1",
+    "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
-    "@types/vscode": "^1.70.0",
-    "@vscode/test-electron": "^2.1.5",
-    "eslint": "^8.20.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.0.0",
-    "typescript": "^4.7.4"
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "eslint": "^8.33.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4"
   },
   "dependencies": {
-    "vsce": "^2.11.0"
+    "vsce": "^2.11.0",
+    "zx": "^7.1.1"
   }
 }
