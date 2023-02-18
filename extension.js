@@ -2,32 +2,33 @@ const vscode = require("vscode");
 const fs = require("fs");
 
 function activate(context) {
-  let disposable = vscode.commands.registerCommand("mode.context", function () {
-    vscode.window.showInformationMessage("Hello World!");
+  const watchedFilePath = ".git/HEAD";
+  const fileWatcher = vscode.workspace.createFileSystemWatcher(watchedFilePath);
 
-    // watch .git/HEAD file
-
-    fs.watchFile(".git/HEAD", (curr, prev) => {
-      // showINformationMessage about current branch
-
-      const branch = fs
-        .readFileSync(".git/HEAD", "utf8")
-        .split("/")
-        .pop()
-        .trim();
-
-      vscode.window.showInformationMessage(`Current branch: ${branch}`);
-    });
+  const disposable = fileWatcher.onDidChange(() => {
+    const branchName = getCurrentBranchName();
+    updateStatusBar(branchName);
   });
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(fileWatcher, disposable);
+
+  const branchName = getCurrentBranchName();
+  updateStatusBar(branchName);
 }
 
-function deactivate() {
-  console.log("deactivate");
+function getCurrentBranchName() {
+  const headFilePath = `${vscode.workspace.rootPath}/.git/HEAD`;
+  const headFileContent = fs.readFileSync(headFilePath, "utf8");
+  const branchName = headFileContent.replace("ref: refs/heads/", "").trim();
+  return branchName;
 }
 
-module.exports = {
-  activate,
-  deactivate,
-};
+function updateStatusBar(branchName) {
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left
+  );
+  statusBarItem.text = `$(git-branch) ${branchName}`;
+  statusBarItem.show();
+}
+
+exports.activate = activate;
