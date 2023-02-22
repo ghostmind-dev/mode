@@ -1,12 +1,13 @@
 {
-  "name": "mode.context",
-  "displayName": "mode.context",
+  "name": "mode-context",
+  "displayName": "mode-context",
   "description": "",
   "version": "0.0.1",
   "publisher": "ghostmind",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ghostmind-dev/mode.git"
+    "url": "https://github.com/ghostmind-dev/mode-context.git"
   },
   "engines": {
     "vscode": "^1.70.0"
@@ -19,6 +20,26 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "context-watcher",
+          "title": "Context watcher",
+          "icon": "media/icon.svg",
+          "badge": "${command:extension.getBadge}"
+        }
+      ]
+    },
+    "views": {
+      "context-watcher": [
+        {
+          "id": "modeContext",
+          "name": "Mode Context",
+          "icon": "media/icon.svg",
+          "contextualTitle": "Context watcher"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "mode.context",
@@ -32,10 +53,10 @@
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/vscode": "^1.75.0",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.75.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
     "eslint": "^8.33.0",
@@ -44,7 +65,8 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "vsce": "^2.11.0",
-    "zx": "^7.1.1"
+    "@ghostmind-dev/run": "^0.2.55",
+    "dotenv": "^16.0.3",
+    "vsce": "^2.11.0"
   }
 }
