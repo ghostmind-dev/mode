@@ -2,7 +2,7 @@
   "name": "mode-context",
   "displayName": "mode-context",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "ghostmind",
   "icon": "icon.png",
   "repository": {
@@ -43,7 +43,7 @@
     "commands": [
       {
         "command": "mode.context",
-        "title": "monitor context"
+        "title": "mode:refresh"
       }
     ]
   },

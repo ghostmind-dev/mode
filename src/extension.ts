@@ -5,11 +5,21 @@ import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
 import { debugPort } from "process";
+import * as EventEmitter from "events";
+
+const globalEmitter = new EventEmitter();
 
 // Import the module using the constructed path
 
+// sleep function
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
+
+  // register command to show the tree view
 
   if (workspaceFolders) {
     const workspaceFolder = workspaceFolders[0];
@@ -22,9 +32,16 @@ export async function activate(context: vscode.ExtensionContext) {
       treeDataProvider: treeProviderInstance,
     });
 
-    // set a 4 seconds interval loop
+    globalEmitter.on("refresh", (data) => {
+      treeView.badge = {
+        tooltip: "This is a tooltip",
+        value: data,
+      };
+    });
 
-    // let i = 0;
+    vscode.commands.registerCommand("mode.context", () => {
+      treeProviderInstance.refresh();
+    });
 
     let head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
 
@@ -32,22 +49,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     treeProviderInstance.branch = branch;
 
-    setInterval(async () => {
-      head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
+    head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
 
-      branch = head.split("/").pop()?.trim() || "";
+    branch = head.split("/").pop()?.trim() || "";
 
-      treeProviderInstance.branch = branch;
+    treeProviderInstance.branch = branch;
 
-      treeProviderInstance.refresh();
-
-      // refs/heads/dev => dev
-
-      treeView.badge = {
-        tooltip: "This is a tooltip",
-        value: treeProviderInstance.iNumberOfItems,
-      };
-    }, 5000);
+    treeProviderInstance.refresh();
   }
 }
 
@@ -70,6 +78,10 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
   public refresh(): void {
     this._onDidChangeTreeData.fire();
+  }
+
+  getNumberOfItems(): number {
+    return this.iNumberOfItems;
   }
 
   async getTreeItem(element: EnvFile): Promise<vscode.TreeItem> {
@@ -109,6 +121,8 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
       }
 
       this.iNumberOfItems = envFiles.length;
+
+      globalEmitter.emit("refresh", this.iNumberOfItems);
 
       return envFiles;
     }
