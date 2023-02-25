@@ -17,6 +17,16 @@ async function sleep(ms: number) {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+  await initActivation(context);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("mode:refresh", async () => {
+      await initActivation(context);
+    })
+  );
+}
+
+async function initActivation(context: vscode.ExtensionContext) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
 
   // register command to show the tree view
@@ -39,13 +49,34 @@ export async function activate(context: vscode.ExtensionContext) {
       };
     });
 
-    vscode.commands.registerCommand("mode.context", () => {
-      treeProviderInstance.refresh();
-    });
-
     let head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
 
     let branch: String = head.split("/").pop()?.trim() || "";
+
+    if (branch === "main") {
+      await fs.promises.writeFile(
+        `${process.env.HOME}/.zshenv`,
+        "export ENV=prod",
+        { flag: "w" }
+      );
+    } else if (branch === "preview") {
+      await fs.promises.writeFile(
+        `${process.env.HOME}/.zshenv`,
+        "export ENV=preview",
+        { flag: "w" }
+      );
+    } else {
+      await fs.promises.writeFile(
+        `${process.env.HOME}/.zshenv`,
+        "export ENV=dev",
+        { flag: "w" }
+      );
+    }
+
+    await vscode.commands.executeCommand("workbench.action.terminal.killAll");
+
+    // Open a new terminal instance
+    await vscode.commands.executeCommand("workbench.action.terminal.new");
 
     treeProviderInstance.branch = branch;
 
@@ -108,14 +139,20 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
           if (this.branch === "main") {
             if (environment !== "prod") {
-              envFiles.push(new EnvFile(`${directory}/.env`));
+              if (await verifyEnvironmentFromFile(directory, "prod")) {
+                envFiles.push(new EnvFile(`${directory}/.env`));
+              }
             }
           } else if (this.branch === "preview") {
             if (environment !== "preview") {
-              envFiles.push(new EnvFile(`${directory}/.env`));
+              if (await verifyEnvironmentFromFile(directory, "preview")) {
+                envFiles.push(new EnvFile(`${directory}/.env`));
+              }
             }
           } else if (environment !== "dev") {
-            envFiles.push(new EnvFile(`${directory}/.env`));
+            if (await verifyEnvironmentFromFile(directory, "dev")) {
+              envFiles.push(new EnvFile(`${directory}/.env`));
+            }
           }
         }
       }
@@ -126,6 +163,36 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
       return envFiles;
     }
+  }
+}
+
+async function verifyEnvironmentFromFile(
+  filePath: any,
+  environmentToMatch: String
+) {
+  try {
+    const fileContent = await fs.promises.readFile(
+      `${filePath}/meta.json`,
+      "utf8"
+    );
+    const jsonContent = JSON.parse(fileContent);
+    const environment = jsonContent.environment;
+
+    if (environment === undefined) {
+      return true;
+    }
+
+    if (
+      Array.isArray(environment) &&
+      environment.includes(environmentToMatch)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 }
 
