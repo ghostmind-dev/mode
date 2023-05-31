@@ -10,9 +10,6 @@ import * as EventEmitter from "events";
 const globalEmitter = new EventEmitter();
 
 
-process.env.ENV = "prod";
-
-
 
 // Import the module using the constructed path
 
@@ -187,6 +184,8 @@ async function verifyEnvironmentFromFile(
     );
     const jsonContent = JSON.parse(fileContent);
     const environment = jsonContent.environment;
+
+    console.("environment", environment)
 
     if (environment === undefined) {
       return true;
