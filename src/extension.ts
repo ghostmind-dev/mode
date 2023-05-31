@@ -10,6 +10,9 @@ import * as EventEmitter from "events";
 const globalEmitter = new EventEmitter();
 
 
+process.env.ENV  =  "prod"
+
+
 
 // Import the module using the constructed path
 
@@ -131,7 +134,7 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
       let directories = await recursiveDirectoriesDiscovery(this.uri);
 
-      console.log(directories)
+
 
       for (let directory of directories) {
         if (await verifyIfEnvFile(directory)) {
@@ -139,9 +142,7 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
           dotenv.config({ path: `${directory}/.env`, override: true });
 
-          let environment = process.env.ENV;
-
-          console.log(environment)
+          let environment = process.env.ENVIRONMENT
   
 
           if (this.branch === "main") {
@@ -187,6 +188,10 @@ async function verifyEnvironmentFromFile(
 
 
     if (environment === undefined) {
+      return true;
+    }
+
+    if Array.isArray(environment) && environment.length === 0 {
       return true;
     }
 
