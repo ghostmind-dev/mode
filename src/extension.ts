@@ -9,6 +9,11 @@ import * as EventEmitter from "events";
 
 const globalEmitter = new EventEmitter();
 
+
+process.env.ENV = "prod";
+
+
+
 // Import the module using the constructed path
 
 // sleep function
@@ -91,7 +96,7 @@ async function initActivation(context: vscode.ExtensionContext) {
 }
 
 class EnvFile {
-  constructor(public readonly name: string) {}
+  constructor(public readonly name: string) { }
 }
 
 class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
@@ -99,7 +104,7 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
   public iNumberOfItems: number = 0;
 
-  constructor(public uri: String) {}
+  constructor(public uri: String) { }
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     EnvFile | undefined | void
@@ -129,13 +134,18 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
       let directories = await recursiveDirectoriesDiscovery(this.uri);
 
+      console.log(directories)
+
       for (let directory of directories) {
         if (await verifyIfEnvFile(directory)) {
           // read the .env with dotenv
 
           dotenv.config({ path: `${directory}/.env`, override: true });
 
-          let environment = process.env.ENVIRONMENT;
+          let environment = process.env.ENV;
+
+          console.log(environment)
+  
 
           if (this.branch === "main") {
             if (environment !== "prod") {
