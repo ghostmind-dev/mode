@@ -2,7 +2,7 @@
   "name": "mode-context",
   "displayName": "mode",
   "description": "",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "ghostmind",
   "repository": {
     "type": "git",
@@ -48,7 +48,7 @@
   },
   "scripts": {
     "package": "vsce package",
-    "compile": "tsc -p ./",
+    "build": "tsc -p ./",
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
@@ -64,8 +64,6 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@ghostmind-dev/run": "^0.2.55",
-    "dotenv": "^16.0.3",
-    "vsce": "^2.11.0"
+    "dotenv": "^16.4.5"
   }
 }

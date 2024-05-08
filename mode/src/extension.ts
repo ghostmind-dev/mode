@@ -1,18 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
-import * as dotenv from "dotenv";
-import { debugPort } from "process";
-import * as EventEmitter from "events";
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as dotenv from 'dotenv';
+import * as EventEmitter from 'events';
 
 const globalEmitter = new EventEmitter();
 
-
-process.env.ENV  =  "prod"
-
-
+process.env.ENV = 'prod';
 
 // Import the module using the constructed path
 
@@ -25,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await initActivation(context);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("mode:refresh", async () => {
+    vscode.commands.registerCommand('mode:refresh', async () => {
       await initActivation(context);
     })
   );
@@ -43,51 +38,45 @@ async function initActivation(context: vscode.ExtensionContext) {
 
     let treeProviderInstance = new modeContextProvider(uri);
 
-    let treeView = vscode.window.createTreeView("modeContext", {
+    let treeView = vscode.window.createTreeView('modeContext', {
       treeDataProvider: treeProviderInstance,
     });
 
-    globalEmitter.on("refresh", (data) => {
+    globalEmitter.on('refresh', (data) => {
       treeView.badge = {
-        tooltip: "This is a tooltip",
+        tooltip: 'This is a tooltip',
         value: data,
       };
     });
 
-    let head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
+    let head = await fs.promises.readFile(uri + '/.git/HEAD', 'utf8');
 
-    let branch: String = head.split("/").pop()?.trim() || "";
+    let branch: String = head.split('/').pop()?.trim() || '';
 
-    if (branch === "main") {
+    if (branch === 'main') {
       await fs.promises.writeFile(
         `${process.env.HOME}/.zshenv`,
-        "export ENV=prod",
-        { flag: "w" }
-      );
-    } else if (branch === "preview") {
-      await fs.promises.writeFile(
-        `${process.env.HOME}/.zshenv`,
-        "export ENV=preview",
-        { flag: "w" }
+        'export ENV=prod',
+        { flag: 'w' }
       );
     } else {
       await fs.promises.writeFile(
         `${process.env.HOME}/.zshenv`,
-        "export ENV=dev",
-        { flag: "w" }
+        `export ENV=${branch}`,
+        { flag: 'w' }
       );
     }
 
-    await vscode.commands.executeCommand("workbench.action.terminal.killAll");
+    await vscode.commands.executeCommand('workbench.action.terminal.killAll');
 
     // Open a new terminal instance
-    await vscode.commands.executeCommand("workbench.action.terminal.new");
+    await vscode.commands.executeCommand('workbench.action.terminal.new');
 
     treeProviderInstance.branch = branch;
 
-    head = await fs.promises.readFile(uri + "/.git/HEAD", "utf8");
+    head = await fs.promises.readFile(uri + '/.git/HEAD', 'utf8');
 
-    branch = head.split("/").pop()?.trim() || "";
+    branch = head.split('/').pop()?.trim() || '';
 
     treeProviderInstance.branch = branch;
 
@@ -96,15 +85,15 @@ async function initActivation(context: vscode.ExtensionContext) {
 }
 
 class EnvFile {
-  constructor(public readonly name: string) { }
+  constructor(public readonly name: string) {}
 }
 
 class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
-  public branch: String = "";
+  public branch: String = '';
 
   public iNumberOfItems: number = 0;
 
-  constructor(public uri: String) { }
+  constructor(public uri: String) {}
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     EnvFile | undefined | void
@@ -127,14 +116,12 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
     );
   }
   async getChildren(element?: EnvFile): Promise<EnvFile[]> {
-    if (element || this.branch === "") {
+    if (element || this.branch === '') {
       return Promise.resolve([]);
     } else {
       let envFiles: EnvFile[] = [];
 
       let directories = await recursiveDirectoriesDiscovery(this.uri);
-
-
 
       for (let directory of directories) {
         if (await verifyIfEnvFile(directory)) {
@@ -142,23 +129,22 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
           dotenv.config({ path: `${directory}/.env`, override: true });
 
-          let environment = process.env.ENVIRONMENT
-  
+          let environment = process.env.ENVIRONMENT;
 
-          if (this.branch === "main") {
-            if (environment !== "prod") {
-              if (await verifyEnvironmentFromFile(directory, "prod")) {
+          if (this.branch === 'main') {
+            if (environment !== 'prod') {
+              if (await verifyEnvironmentFromFile(directory, 'prod')) {
                 envFiles.push(new EnvFile(`${directory}/.env`));
               }
             }
-          } else if (this.branch === "preview") {
-            if (environment !== "preview") {
-              if (await verifyEnvironmentFromFile(directory, "preview")) {
+          } else if (this.branch === 'preview') {
+            if (environment !== 'preview') {
+              if (await verifyEnvironmentFromFile(directory, 'preview')) {
                 envFiles.push(new EnvFile(`${directory}/.env`));
               }
             }
-          } else if (environment !== "dev") {
-            if (await verifyEnvironmentFromFile(directory, "dev")) {
+          } else if (environment !== 'dev') {
+            if (await verifyEnvironmentFromFile(directory, 'dev')) {
               envFiles.push(new EnvFile(`${directory}/.env`));
             }
           }
@@ -167,7 +153,7 @@ class modeContextProvider implements vscode.TreeDataProvider<EnvFile> {
 
       this.iNumberOfItems = envFiles.length;
 
-      globalEmitter.emit("refresh", this.iNumberOfItems);
+      globalEmitter.emit('refresh', this.iNumberOfItems);
 
       return envFiles;
     }
@@ -181,17 +167,16 @@ async function verifyEnvironmentFromFile(
   try {
     const fileContent = await fs.promises.readFile(
       `${filePath}/meta.json`,
-      "utf8"
+      'utf8'
     );
     const jsonContent = JSON.parse(fileContent);
     const environment = jsonContent.environment;
-
 
     if (environment === undefined) {
       return true;
     }
 
-    if Array.isArray(environment) && environment.length === 0 {
+    if (Array.isArray(environment) && environment.length === 0) {
       return true;
     }
 
@@ -225,9 +210,9 @@ async function getDirectories(path: any) {
 
   const directories = directoriesWithFiles
     .filter((dirent) => dirent.isDirectory())
-    .filter((dirent) => dirent.name !== "node_modules")
-    .filter((dirent) => dirent.name !== ".git")
-    .filter((dirent) => dirent.name !== "migrations")
+    .filter((dirent) => dirent.name !== 'node_modules')
+    .filter((dirent) => dirent.name !== '.git')
+    .filter((dirent) => dirent.name !== 'migrations')
     .map((dirent) => dirent.name);
 
   return directories;
