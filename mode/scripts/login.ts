@@ -1,7 +1,9 @@
 import { $ } from 'npm:zx';
 
 export default async function (args: CustomArgs, opts: CustomOptions) {
-  await $`npm run build`;
+  const { env } = opts;
 
-  await $`vsce publish`;
+  const { PUBLISHER_NAME } = env;
+
+  await $`vsce login ${PUBLISHER_NAME}`;
 }
